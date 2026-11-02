@@ -3,162 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cardápio Digital - Firebase</title>
+  <title>Cardápio Digital</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #f4f6f8;
-      color: #222;
-      min-height: 100vh;
-    }
-    header {
-      background: #ff6b35;
-      color: white;
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f8; color: #222; min-height: 100vh; }
+    header { background: #ff6b35; color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     header h1 { font-size: 1.3rem; }
     .user-info { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
-    button {
-      cursor: pointer;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      transition: 0.2s;
-    }
+    button { cursor: pointer; border: none; border-radius: 8px; padding: 10px 16px; font-size: 0.95rem; font-weight: 600; transition: 0.2s; }
     .btn-primary { background: #ff6b35; color: white; }
     .btn-primary:hover { background: #e85a28; }
-    .btn-light { background: white; color: #ff6b35; }
-    .btn-light:hover { background: #ffe8de; }
     .btn-ghost { background: transparent; color: white; border: 1px solid white; }
-
     main { max-width: 1000px; margin: 0 auto; padding: 20px; }
-
-    /* Auth screen */
-    #auth-screen {
-      max-width: 400px;
-      margin: 60px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
+    
+    #auth-screen { max-width: 400px; margin: 60px auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
     #auth-screen h2 { margin-bottom: 20px; text-align: center; color: #ff6b35; }
-    #auth-screen input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 1rem;
-    }
+    #auth-screen input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
     #auth-screen button { width: 100%; margin-top: 8px; }
-    .toggle-auth {
-      text-align: center;
-      margin-top: 16px;
-      font-size: 0.9rem;
-      color: #666;
-    }
+    .toggle-auth { text-align: center; margin-top: 16px; font-size: 0.9rem; color: #666; }
     .toggle-auth a { color: #ff6b35; cursor: pointer; font-weight: 600; }
     .msg { font-size: 0.9rem; text-align: center; margin-top: 10px; min-height: 20px; }
     .msg.error { color: #d32f2f; }
     .msg.success { color: #2e7d32; }
 
-    /* Menu screen */
     #menu-screen { display: none; }
-    .filters {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin: 20px 0;
-    }
-    .filters button {
-      background: white;
-      color: #555;
-      border: 1px solid #ddd;
-      padding: 8px 14px;
-      font-size: 0.85rem;
-    }
-    .filters button.active {
-      background: #ff6b35;
-      color: white;
-      border-color: #ff6b35;
-    }
-    .products-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-    }
-    .product-card {
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-      transition: 0.2s;
-      display: flex;
-      flex-direction: column;
-    }
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+    .filters button { background: white; color: #555; border: 1px solid #ddd; padding: 8px 14px; font-size: 0.85rem; }
+    .filters button.active { background: #ff6b35; color: white; border-color: #ff6b35; }
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06); transition: 0.2s; display: flex; flex-direction: column; }
     .product-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
-    .product-img {
-      height: 140px;
-      background: linear-gradient(135deg, #ffb88c, #ff6b35);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-    }
+    .product-img { height: 140px; background: linear-gradient(135deg, #ffb88c, #ff6b35); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
     .product-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
     .product-info h3 { font-size: 1rem; margin-bottom: 6px; }
     .product-info p { font-size: 0.85rem; color: #666; flex: 1; margin-bottom: 10px; }
-    .product-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .product-footer { display: flex; justify-content: space-between; align-items: center; }
     .price { font-weight: 700; color: #ff6b35; font-size: 1.1rem; }
-    .add-btn {
-      background: #ff6b35;
-      color: white;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      border-radius: 20px;
-    }
-    .add-btn:hover { background: #e85a28; }
-
-    .cart-bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: #222;
-      color: white;
-      padding: 14px 20px;
-      display: none;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.95rem;
-      z-index: 1000;
-    }
-    .cart-bar button {
-      background: #ff6b35;
-      color: white;
-      padding: 8px 16px;
-    }
-
-    @media (max-width: 500px) {
-      header h1 { font-size: 1.1rem; }
-      .product-img { height: 110px; font-size: 2.2rem; }
-    }
+    .add-btn { background: #ff6b35; color: white; padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; }
+    
+    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #222; color: white; padding: 14px 20px; display: none; justify-content: space-between; align-items: center; font-size: 0.95rem; z-index: 1000; }
+    .cart-bar button { background: #ff6b35; color: white; padding: 8px 16px; }
+    .loading { text-align: center; padding: 40px; font-size: 1.2rem; color: #666; }
   </style>
 </head>
 <body>
-
-  <!-- ===== HEADER ===== -->
   <header>
     <h1>🍔 Sabor Digital</h1>
     <div class="user-info" id="user-info" style="display:none;">
@@ -167,7 +55,6 @@
     </div>
   </header>
 
-  <!-- ===== AUTH SCREEN ===== -->
   <section id="auth-screen">
     <h2 id="auth-title">Entrar</h2>
     <form id="auth-form" onsubmit="handleAuth(event)">
@@ -182,12 +69,10 @@
     <div class="msg" id="auth-msg"></div>
   </section>
 
-  <!-- ===== MENU SCREEN ===== -->
   <section id="menu-screen">
     <main>
       <h2 style="color:#333;">Nosso Cardápio</h2>
       <p style="color:#888; font-size:0.9rem; margin-top:4px;">Bem-vindo! Faça seu pedido 🍽️</p>
-
       <div class="filters" id="filters">
         <button class="active" data-cat="all">Todos</button>
         <button data-cat="lanche">Lanches</button>
@@ -195,24 +80,21 @@
         <button data-cat="bebida">Bebidas</button>
         <button data-cat="sobremesa">Sobremesas</button>
       </div>
-
-      <div class="products-grid" id="products-grid"></div>
+      <div class="products-grid" id="products-grid">
+         <div class="loading">Carregando cardápio...</div>
+      </div>
     </main>
-
     <div class="cart-bar" id="cart-bar">
       <span id="cart-text">🛒 0 itens</span>
       <button onclick="checkout()">Finalizar</button>
     </div>
   </section>
 
-  <!-- SDK do Firebase (Versão Compat para funcionar direto no HTML) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // =========================================================
-    // 🔑 SUAS CREDENCIAIS DO FIREBASE
-    // =========================================================
     const firebaseConfig = {
       apiKey: "AIzaSyAhE4mUNfF7K-5jmcZEmsRYWRtssPecDsM",
       authDomain: "cardapio-digital-b4e42.firebaseapp.com",
@@ -222,31 +104,15 @@
       appId: "1:104030449529:web:17fd5ff1f328bae0efc9a8"
     };
 
-    // Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    // =========================================================
-
-    // ---------- PRODUTOS (dados de teste) ----------
-    const products = [
-      { id: 1, name: "X-Burger", desc: "Pão, carne, queijo e molho especial", price: 18.90, cat: "lanche", emoji: "🍔" },
-      { id: 2, name: "X-Bacon", desc: "Bacon crocante com cheddar", price: 22.50, cat: "lanche", emoji: "🥓" },
-      { id: 3, name: "X-Salada", desc: "Carne, queijo, alface e tomate", price: 19.90, cat: "lanche", emoji: "🥗" },
-      { id: 4, name: "Pizza Calabresa", desc: "Calabresa fatiada e cebola", price: 45.00, cat: "pizza", emoji: "🍕" },
-      { id: 5, name: "Pizza Margherita", desc: "Muçarela, tomate e manjericão", price: 42.00, cat: "pizza", emoji: "🍕" },
-      { id: 6, name: "Pizza Quatro Queijos", desc: "Quatro tipos de queijo", price: 49.90, cat: "pizza", emoji: "🧀" },
-      { id: 7, name: "Coca-Cola 350ml", desc: "Lata gelada", price: 6.00, cat: "bebida", emoji: "🥤" },
-      { id: 8, name: "Suco de Laranja", desc: "Natural 500ml", price: 9.50, cat: "bebida", emoji: "🍊" },
-      { id: 9, name: "Água Mineral", desc: "Garrafa 500ml", price: 4.00, cat: "bebida", emoji: "💧" },
-      { id: 10, name: "Brownie", desc: "Chocolate com nozes", price: 12.00, cat: "sobremesa", emoji: "🍫" },
-      { id: 11, name: "Pudim", desc: "Caseiro com calda", price: 10.00, cat: "sobremesa", emoji: "🍮" },
-    ];
+    const db = firebase.firestore();
 
     let isLoginMode = true;
     let cart = [];
     let currentUser = null;
+    let produtosDB = [];
 
-    // ---------- AUTH ----------
     function toggleAuth() {
       isLoginMode = !isLoginMode;
       document.getElementById("auth-title").textContent = isLoginMode ? "Entrar" : "Criar conta";
@@ -269,13 +135,11 @@
 
       try {
         if (isLoginMode) {
-          // LOGIN
           const userCredential = await auth.signInWithEmailAndPassword(email, password);
           msg.className = "msg success";
           msg.textContent = "Login realizado! ✅";
           setTimeout(() => showMenu(userCredential.user), 500);
         } else {
-          // CADASTRO
           const userCredential = await auth.createUserWithEmailAndPassword(email, password);
           msg.className = "msg success";
           msg.textContent = "Conta criada e logado! ✅";
@@ -295,7 +159,6 @@
       if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') return "Senha incorreta.";
       if (code === 'auth/email-already-in-use') return "Este e-mail já está cadastrado.";
       if (code === 'auth/weak-password') return "A senha deve ter pelo menos 6 caracteres.";
-      if (code === 'auth/network-request-failed') return "Erro de conexão. Verifique sua internet.";
       return "Ocorreu um erro: " + code;
     }
 
@@ -312,28 +175,53 @@
       });
     }
 
-    // ---------- MENU ----------
-    function showMenu(user) {
+    async function showMenu(user) {
       currentUser = user;
       document.getElementById("auth-screen").style.display = "none";
       document.getElementById("menu-screen").style.display = "block";
       document.getElementById("user-info").style.display = "flex";
       document.getElementById("user-email").textContent = user.email;
-      renderProducts("all");
+      
+      // Buscar produtos do Firebase
+      const grid = document.getElementById("products-grid");
+      grid.innerHTML = '<div class="loading">Carregando cardápio...</div>';
+      
+      try {
+        const snapshot = await db.collection('produtos').get();
+        produtosDB = [];
+        snapshot.forEach(doc => {
+          produtosDB.push({ id: doc.id, ...doc.data() });
+        });
+        
+        if (produtosDB.length === 0) {
+          grid.innerHTML = '<div class="loading">Nenhum produto cadastrado no momento.</div>';
+        } else {
+          renderProducts("all");
+        }
+      } catch (error) {
+        grid.innerHTML = '<div class="loading" style="color:red">Erro ao carregar produtos.</div>';
+        console.error(error);
+      }
     }
 
     function renderProducts(cat) {
       const grid = document.getElementById("products-grid");
-      const list = cat === "all" ? products : products.filter(p => p.cat === cat);
+      const list = cat === "all" ? produtosDB : produtosDB.filter(p => p.cat === cat);
+      
+      if(list.length === 0) {
+         grid.innerHTML = '<div class="loading">Nenhum produto nesta categoria.</div>';
+         return;
+      }
+
       grid.innerHTML = list.map(p => `
         <div class="product-card">
-          <div class="product-img">${p.emoji}</div>
+          <div class="product-img">${p.emoji || '🍽️'}</div>
           <div class="product-info">
             <h3>${p.name}</h3>
-            <p>${p.desc}</p>
+            <p>${p.desc || ''}</p>
             <div class="product-footer">
-              <span class="price">R$ ${p.price.toFixed(2)}</span>
-              <button class="add-btn" onclick="addToCart(${p.id})">+ Add</button>
+              <span class="price">R$ ${parseFloat(p.price).toFixed(2)}</span>
+              <button class="add-btn" onclick="addToCart('${p.id}')">+ Add</button>
             </div>
           </div>
         </div>
@@ -347,9 +235,8 @@
       renderProducts(e.target.dataset.cat);
     });
 
-    // ---------- CART ----------
     function addToCart(id) {
-      const prod = products.find(p => p.id === id);
+      const prod = produtosDB.find(p => p.id === id);
       const item = cart.find(i => i.id === id);
       if (item) item.qty++;
       else cart.push({ ...prod, qty: 1 });
@@ -361,7 +248,7 @@
       const total = cart.reduce((s, i) => s + i.qty, 0);
       if (total > 0 && currentUser) {
         bar.style.display = "flex";
-        const sum = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        const sum = cart.reduce((s, i) => s + (parseFloat(i.price) * i.qty), 0);
         document.getElementById("cart-text").textContent = `🛒 ${total} itens — R$ ${sum.toFixed(2)}`;
       } else {
         bar.style.display = "none";
@@ -369,19 +256,16 @@
     }
 
     function checkout() {
-      const sum = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      const sum = cart.reduce((s, i) => s + (parseFloat(i.price) * i.qty), 0);
       const items = cart.map(i => `${i.qty}x ${i.name}`).join("\n");
       alert(`Pedido confirmado! ✅\n\n${items}\n\nTotal: R$ ${sum.toFixed(2)}\n\nObrigado, ${currentUser.email}!`);
       cart = [];
       updateCartBar();
     }
 
-    // ---------- INICIALIZAÇÃO (Verifica se o usuário já está logado) ----------
     auth.onAuthStateChanged((user) => {
-      if (user) {
-        showMenu(user);
-      }
+      if (user) showMenu(user);
     });
   </script>
 </body>
-    </html>
+</html>
