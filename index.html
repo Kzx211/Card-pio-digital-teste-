@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cardápio Digital - Teste</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>Cardápio Digital - Firebase</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -206,16 +205,27 @@
     </div>
   </section>
 
+  <!-- SDK do Firebase (Versão Compat para funcionar direto no HTML) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
   <script>
     // =========================================================
-    // 🔑 CREDENCIAIS DO SUPABASE CONFIGURADAS
+    // 🔑 SUAS CREDENCIAIS DO FIREBASE
     // =========================================================
-    const SUPABASE_URL = "https://ocwwykyvxwtyftworef.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jd3d5a3l2eHd0eWZ0d29yZW5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1NzU4MTUsImV4cCI6MjEwOTE1MTgxNX0.fmHEiOn76FodLpf1w4WRVnO6m7Yx-pN7B2m39W7gNDE";
-    // =========================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAhE4mUNfF7K-5jmcZEmsRYWRtssPecDsM",
+      authDomain: "cardapio-digital-b4e42.firebaseapp.com",
+      projectId: "cardapio-digital-b4e42",
+      storageBucket: "cardapio-digital-b4e42.firebasestorage.app",
+      messagingSenderId: "104030449529",
+      appId: "1:104030449529:web:17fd5ff1f328bae0efc9a8"
+    };
 
-    const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    // =========================================================
 
     // ---------- PRODUTOS (dados de teste) ----------
     const products = [
@@ -252,48 +262,54 @@
       const password = document.getElementById("password").value;
       const msg = document.getElementById("auth-msg");
       const btn = document.getElementById("auth-btn");
+      
       btn.disabled = true;
       msg.className = "msg";
       msg.textContent = "Aguarde...";
 
       try {
         if (isLoginMode) {
-          const { data, error } = await db.auth.signInWithPassword({ email, password });
-          if (error) throw error;
+          // LOGIN
+          const userCredential = await auth.signInWithEmailAndPassword(email, password);
           msg.className = "msg success";
           msg.textContent = "Login realizado! ✅";
-          setTimeout(() => showMenu(data.user), 500);
+          setTimeout(() => showMenu(userCredential.user), 500);
         } else {
-          const { data, error } = await db.auth.signUp({ email, password });
-          if (error) throw error;
-          
-          if (data.user && !data.session) {
-            msg.className = "msg success";
-            msg.textContent = "Conta criada! Verifique seu e-mail para confirmar.";
-          } else {
-            msg.className = "msg success";
-            msg.textContent = "Conta criada e logado! ✅";
-            setTimeout(() => showMenu(data.user), 500);
-          }
+          // CADASTRO
+          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+          msg.className = "msg success";
+          msg.textContent = "Conta criada e logado! ✅";
+          setTimeout(() => showMenu(userCredential.user), 500);
         }
       } catch (err) {
         msg.className = "msg error";
-        msg.textContent = "Erro: " + err.message; 
+        msg.textContent = traduzErro(err.code);
       } finally {
         btn.disabled = false;
       }
     }
 
-    async function logout() {
-      await db.auth.signOut();
-      currentUser = null;
-      cart = [];
-      document.getElementById("user-info").style.display = "none";
-      document.getElementById("menu-screen").style.display = "none";
-      document.getElementById("auth-screen").style.display = "block";
-      document.getElementById("auth-msg").textContent = "";
-      document.getElementById("auth-form").reset();
-      updateCartBar();
+    function traduzErro(code) {
+      if (code === 'auth/invalid-email') return "E-mail inválido.";
+      if (code === 'auth/user-not-found') return "E-mail não cadastrado.";
+      if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') return "Senha incorreta.";
+      if (code === 'auth/email-already-in-use') return "Este e-mail já está cadastrado.";
+      if (code === 'auth/weak-password') return "A senha deve ter pelo menos 6 caracteres.";
+      if (code === 'auth/network-request-failed') return "Erro de conexão. Verifique sua internet.";
+      return "Ocorreu um erro: " + code;
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        currentUser = null;
+        cart = [];
+        document.getElementById("user-info").style.display = "none";
+        document.getElementById("menu-screen").style.display = "none";
+        document.getElementById("auth-screen").style.display = "block";
+        document.getElementById("auth-msg").textContent = "";
+        document.getElementById("auth-form").reset();
+        updateCartBar();
+      });
     }
 
     // ---------- MENU ----------
@@ -360,13 +376,12 @@
       updateCartBar();
     }
 
-    // ---------- INICIALIZAÇÃO ----------
-    (async () => {
-      const { data } = await db.auth.getSession();
-      if (data.session && data.session.user) {
-        showMenu(data.session.user);
+    // ---------- INICIALIZAÇÃO (Verifica se o usuário já está logado) ----------
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        showMenu(user);
       }
-    })();
+    });
   </script>
 </body>
-</html>
+    </html>
