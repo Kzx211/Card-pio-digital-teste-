@@ -208,10 +208,10 @@
 
   <script>
     // =========================================================
-    // 🔑 SUAS CREDENCIAIS DO SUPABASE (ATUALIZADAS)
+    // 🔑 CREDENCIAIS DO SUPABASE CONFIGURADAS
     // =========================================================
     const SUPABASE_URL = "https://ocwwykyvxwtyftworef.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_ithvVD7jxjBPDHgj4_bp4Q_wf1SzmVU";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jd3d5a3l2eHd0eWZ0d29yZW5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1NzU4MTUsImV4cCI6MjEwOTE1MTgxNX0.fmHEiOn76FodLpf1w4WRVnO6m7Yx-pN7B2m39W7gNDE";
     // =========================================================
 
     const { createClient } = supabase;
@@ -278,7 +278,6 @@
         }
       } catch (err) {
         msg.className = "msg error";
-        // Mostra o erro real na tela para sabermos o que está acontecendo
         msg.textContent = "Erro: " + err.message; 
       } finally {
         btn.disabled = false;
