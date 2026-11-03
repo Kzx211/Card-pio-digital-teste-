@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin | Nexxo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background-color: #f3f4f6; }
+    .sidebar-item.active { background-color: #E85D2A; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; align-items: center; justify-content: center; padding: 16px;}
+    .modal.active { display: flex; }
+    .btn-primary { background-color: #E85D2A !important; color: white !important; }
+    .btn-primary:hover { background-color: #d14e1f !important; }
+  </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="w-64 bg-gray-900 text-white flex-col hidden md:flex">
+    <div class="h-16 flex items-center justify-center border-b border-gray-800">
+      <h1 class="text-xl font-bold text-[#E85D2A]">Nexxo Admin</h1>
+    </div>
+    <nav class="flex-1 p-4 space-y-2">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition text-left active">
+        <i class="fas fa-chart-line w-5"></i> Dashboard
+      </button>
+      <button onclick="switchTab('pedidos')" id="nav-pedidos" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition text-left relative">
+        <i class="fas fa-receipt w-5"></i> Pedidos
+        <span id="badge-pedidos" class="absolute right-4 top-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden">0</span>
+      </button>
+      <button onclick="switchTab('produtos')" id="nav-produtos" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition text-left">
+        <i class="fas fa-hamburger w-5"></i> Produtos
+      </button>
+      <button onclick="switchTab('categorias')" id="nav-categorias" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition text-left">
+        <i class="fas fa-tags w-5"></i> Categorias
+      </button>
+      <button onclick="switchTab('config')" id="nav-config" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition text-left">
+        <i class="fas fa-cog w-5"></i> Configurações
+      </button>
+    </nav>
+    <div class="p-4 border-t border-gray-800">
+      <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition">
+        <i class="fas fa-sign-out-alt mr-2"></i> Sair
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <!-- HEADER MOBILE -->
+    <header class="bg-white shadow-sm h-16 flex items-center justify-between px-4 md:hidden z-20">
+      <h1 class="text-lg font-bold text-[#E85D2A]">Nexxo Admin</h1>
+      <button onclick="logout()" class="text-red-500 p-2"><i class="fas fa-sign-out-alt text-xl"></i></button>
+    </header>
+    
+    <!-- NAVEGAÇÃO MOBILE (ABAS EMBAIXO) -->
+    <div class="md:hidden fixed bottom-0 w-full bg-white border-t flex justify-around py-2 z-50">
+      <button onclick="switchTab('dashboard')" class="text-gray-500 flex flex-col items-center text-[10px]"><i class="fas fa-chart-line text-lg mb-1"></i>Dash</button>
+      <button onclick="switchTab('pedidos')" class="text-gray-500 flex flex-col items-center text-[10px] relative"><i class="fas fa-receipt text-lg mb-1"></i>Pedidos<span id="badge-mobile" class="absolute top-0 right-2 bg-red-500 text-white text-[9px] px-1.5 rounded-full hidden">0</span></button>
+      <button onclick="switchTab('produtos')" class="text-gray-500 flex flex-col items-center text-[10px]"><i class="fas fa-hamburger text-lg mb-1"></i>Produtos</button>
+      <button onclick="switchTab('categorias')" class="text-gray-500 flex flex-col items-center text-[10px]"><i class="fas fa-tags text-lg mb-1"></i>Categorias</button>
+      <button onclick="switchTab('config')" class="text-gray-500 flex flex-col items-center text-[10px]"><i class="fas fa-cog text-lg mb-1"></i>Config</button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
+      
+      <!-- TELA LOGIN -->
+      <div id="login-screen" class="max-w-md mx-auto mt-10 bg-white p-8 rounded-xl shadow-md">
+        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Acesso Restrito</h2>
+        <form onsubmit="handleLogin(event)">
+          <input type="email" id="login-email" placeholder="E-mail" required class="w-full mb-4 px-4 py-3 border rounded-lg focus:outline-none focus:border-[#E85D2A]">
+          <input type="password" id="login-password" placeholder="Senha" required class="w-full mb-6 px-4 py-3 border rounded-lg focus:outline-none focus:border-[#E85D2A]">
+          <button type="submit" class="btn-primary w-full font-bold py-3 rounded-lg transition">Entrar</button>
+        </form>
+        <p id="login-error" class="text-red-500 text-center mt-4 text-sm"></p>
+      </div>
+
+      <!-- CONTEÚDO DO PAINEL -->
+      <div id="app-content" class="hidden">
+        
+        <!-- ABA: DASHBOARD -->
+        <div id="tab-dashboard" class="tab-content active">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">Visão Geral</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-[#E85D2A]">
+              <p class="text-gray-500 text-sm">Status da Loja</p>
+              <h3 id="dash-status" class="text-2xl font-bold text-green-500">Aberta</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+              <p class="text-gray-500 text-sm">Pedidos Pendentes</p>
+              <h3 id="dash-pedidos" class="text-2xl font-bold text-gray-800">0</h3>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
+              <p class="text-gray-500 text-sm">Produtos Cadastrados</p>
+              <h3 id="dash-produtos" class="text-2xl font-bold text-gray-800">0</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA: PEDIDOS -->
+        <div id="tab-pedidos" class="tab-content">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">Pedidos Recentes</h2>
+          <div id="lista-pedidos" class="space-y-4">
+            <p class="text-gray-500">Nenhum pedido novo no momento...</p>
+          </div>
+        </div>
+
+        <!-- ABA: PRODUTOS -->
+        <div id="tab-produtos" class="tab-content">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Gerenciar Produtos</h2>
+            <button onclick="openModalProduto()" class="btn-primary px-4 py-2 rounded-lg transition text-sm font-bold"><i class="fas fa-plus mr-2"></i>Novo Produto</button>
+          </div>
+          <!-- LISTA DE PRODUTOS -->
+          <div id="lista-produtos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <p class="text-gray-500 col-span-full text-center py-4">Carregando produtos...</p>
+          </div>
+        </div>
+
+        <!-- ABA: CATEGORIAS -->
+        <div id="tab-categorias" class="tab-content">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Categorias</h2>
+            <button onclick="openModal('modal-categoria')" class="btn-primary px-4 py-2 rounded-lg transition text-sm font-bold"><i class="fas fa-plus mr-2"></i>Nova Categoria</button>
+          </div>
+          <div id="lista-categorias" class="space-y-2 max-w-lg"></div>
+        </div>
+
+        <!-- ABA: CONFIGURAÇÕES -->
+        <div id="tab-config" class="tab-content">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">Configurações da Loja</h2>
+          <div class="bg-white p-6 rounded-xl shadow-sm max-w-lg">
+            <div class="mb-4">
+              <label class="block text-gray-700 font-medium mb-2">Nome da Empresa</label>
+              <input type="text" id="config-nome" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-[#E85D2A]">
+            </div>
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border mb-6">
+              <div>
+                <p class="font-bold text-gray-800">Status da Loja</p>
+                <p class="text-sm text-gray-500">Se fechada, os clientes não podem fazer pedidos.</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="config-status" class="sr-only peer" onchange="toggleLoja(this.checked)">
+                <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+              </label>
+            </div>
+            <button onclick="salvarConfig()" class="btn-primary w-full py-3 rounded-lg font-bold transition">Salvar Configurações</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: ADICIONAR/EDITAR PRODUTO -->
+  <div id="modal-produto" class="modal">
+    <div class="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="p-5 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+        <h3 id="modal-produto-titulo" class="text-xl font-bold text-gray-800">Novo Produto</h3>
+        <button onclick="closeModal('modal-produto')" class="text-gray-500 hover:text-red-500 text-2xl">&times;</button>
+      </div>
+      <form onsubmit="salvarProduto(event)" class="p-5 space-y-4">
+        <input type="hidden" id="prod-id">
+        <div>
+          <label class="block text-sm font-medium mb-1">Nome do Produto</label>
+          <input type="text" id="prod-nome" required class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Preço (R$)</label>
+            <input type="number" step="0.01" id="prod-preco" required class="w-full px-3 py-2 border rounded-lg">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Categoria</label>
+            <select id="prod-categoria" required class="w-full px-3 py-2 border rounded-lg bg-white"></select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Descrição</label>
+          <textarea id="prod-desc" rows="2" class="w-full px-3 py-2 border rounded-lg"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Link da Imagem (URL)</label>
+          <input type="url" id="prod-imagem" placeholder="https://exemplo.com/foto.jpg" required class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="prod-esgotado" class="w-4 h-4 accent-[#E85D2A]">
+          <label for="prod-esgotado" class="text-sm font-medium">Esgotado</label>
+        </div>
+        <button type="submit" class="btn-primary w-full py-3 rounded-lg font-bold transition">Salvar Produto</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADICIONAR CATEGORIA -->
+  <div id="modal-categoria" class="modal">
+    <div class="bg-white rounded-xl w-full max-w-sm">
+      <div class="p-5 border-b flex justify-between items-center">
+        <h3 class="text-xl font-bold text-gray-800">Nova Categoria</h3>
+        <button onclick="closeModal('modal-categoria')" class="text-gray-500 hover:text-red-500 text-2xl">&times;</button>
+      </div>
+      <form onsubmit="addCategoria(event)" class="p-5 space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Nome da Categoria</label>
+          <input type="text" id="cat-nome" required class="w-full px-3 py-2 border rounded-lg" placeholder="Ex: Pizzas...">
+        </div>
+        <button type="submit" class="btn-primary w-full py-3 rounded-lg font-bold transition">Salvar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAhE4mUNfF7K-5jmcZEmsRYWRtssPecDsM",
+      authDomain: "cardapio-digital-b4e42.firebaseapp.com",
+      projectId: "cardapio-digital-b4e42",
+      storageBucket: "cardapio-digital-b4e42.firebasestorage.app",
+      messagingSenderId: "104030449529",
+      appId: "1:104030449529:web:17fd5ff1f328bae0efc9a8"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const ADMIN_EMAIL = "contaefootball24@gmail.com";
+
+    let categoriasGlobal = [];
+    let produtosGlobal = [];
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value;
+      const pass = document.getElementById("login-password").value;
+      const err = document.getElementById("login-error");
+      err.textContent = "Verificando...";
+      try {
+        const cred = await auth.signInWithEmailAndPassword(email, pass);
+        if (cred.user.email === ADMIN_EMAIL) {
+          document.getElementById("login-screen").classList.add("hidden");
+          document.getElementById("app-content").classList.remove("hidden");
+          initApp();
+        } else {
+          await auth.signOut();
+          err.textContent = "Acesso negado.";
+        }
+      } catch (error) {
+        err.textContent = "E-mail ou senha incorretos.";
+      }
+    }
+
+    function logout() { auth.signOut().then(() => location.reload()); }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+      document.getElementById(`nav-${tab}`).classList.add('active');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function initApp() {
+      // Carregar Configurações
+      db.collection('config').doc('geral').onSnapshot(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById('config-nome').value = data.nomeLoja || 'Nexxo';
+          document.getElementById('config-status').checked = data.aberta;
+          document.getElementById('dash-status').textContent = data.aberta ? 'Aberta' : 'Fechada';
+          document.getElementById('dash-status').className = `text-2xl font-bold ${data.aberta ? 'text-green-500' : 'text-red-500'}`;
+        }
+      });
+
+      // Carregar Categorias
+      db.collection('categorias').onSnapshot(snap => {
+        categoriasGlobal = [];
+        const select = document.getElementById('prod-categoria');
+        const list = document.getElementById('lista-categorias');
+        select.innerHTML = '<option value="">Selecione...</option>';
+        list.innerHTML = '';
+        
+        snap.forEach(doc => {
+          const cat = { id: doc.id, ...doc.data() };
+          categoriasGlobal.push(cat);
+          select.innerHTML += `<option value="${cat.id}">${cat.nome}</option>`;
+          list.innerHTML += `
+            <div class="flex justify-between items-center bg-white p-3 rounded-lg border">
+              <span class="font-medium">${cat.nome}</span>
+              <button type="button" onclick="deleteCategoria('${cat.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+            </div>
+          `;
+        });
+      });
+
+      // Carregar Produtos (CORRIGIDO: Sem ordenação forçada que travava a lista)
+      db.collection('produtos').onSnapshot(snap => {
+        produtosGlobal = [];
+        const list = document.getElementById('lista-produtos');
+        list.innerHTML = '';
+        document.getElementById('dash-produtos').textContent = snap.size;
+
+        if (snap.empty) {
+           list.innerHTML = '<p class="text-gray-500 col-span-full text-center py-4">Nenhum produto cadastrado.</p>';
+           return;
+        }
+
+        snap.forEach(doc => {
+          const prod = { id: doc.id, ...doc.data() };
+          produtosGlobal.push(prod);
+          const catNome = categoriasGlobal.find(c => c.id === prod.categoriaId)?.nome || 'Sem categoria';
+          
+          list.innerHTML += `
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col">
+              <img src="${prod.imagem}" onerror="this.src='https://via.placeholder.com/150?text=Sem+Foto'" alt="${prod.nome}" class="w-full h-32 object-cover bg-gray-200">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-2">
+                  <h4 class="font-bold text-lg">${prod.nome}</h4>
+                  ${prod.esgotado ? '<span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded">Esgotado</span>' : ''}
+                </div>
+                <p class="text-gray-500 text-sm mb-2 flex-1">${prod.descricao || 'Sem descrição'}</p>
+                <p class="text-xs text-gray-400 mb-3">${catNome}</p>
+                <div class="flex justify-between items-center mt-auto pt-3 border-t">
+                  <span class="font-bold text-[#E85D2A] text-lg">R$ ${prod.preco.toFixed(2)}</span>
+                  <div class="flex gap-2">
+                    <!-- NOVO BOTÃO DE EDITAR -->
+                    <button type="button" onclick="editarProduto('${prod.id}')" class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i class="fas fa-edit"></i></button>
+                    <button type="button" onclick="deleteProduto('${prod.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i class="fas fa-trash"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      });
+    }
+
+    // FUNÇÕES DE PRODUTO (CRIAR E EDITAR)
+    function openModalProduto() {
+      document.getElementById('modal-produto-titulo').textContent = "Novo Produto";
+      document.getElementById('prod-id').value = "";
+      document.getElementById('prod-nome').value = "";
+      document.getElementById('prod-preco').value = "";
+      document.getElementById('prod-desc').value = "";
+      document.getElementById('prod-imagem').value = "";
+      document.getElementById('prod-esgotado').checked = false;
+      openModal('modal-produto');
+    }
+
+    function editarProduto(id) {
+      const prod = produtosGlobal.find(p => p.id === id);
+      if (!prod) return;
+      
+      document.getElementById('modal-produto-titulo').textContent = "Editar Produto";
+      document.getElementById('prod-id').value = prod.id;
+      document.getElementById('prod-nome').value = prod.nome;
+      document.getElementById('prod-preco').value = prod.preco;
+      document.getElementById('prod-categoria').value = prod.categoriaId;
+      document.getElementById('prod-desc').value = prod.descricao || "";
+      document.getElementById('prod-imagem').value = prod.imagem;
+      document.getElementById('prod-esgotado').checked = prod.esgotado;
+      
+      openModal('modal-produto');
+    }
+
+    async function salvarProduto(e) {
+      e.preventDefault();
+      const id = document.getElementById('prod-id').value;
+      const dados = {
+        nome: document.getElementById('prod-nome').value,
+        preco: parseFloat(document.getElementById('prod-preco').value),
+        categoriaId: document.getElementById('prod-categoria').value,
+        descricao: document.getElementById('prod-desc').value,
+        imagem: document.getElementById('prod-imagem').value,
+        esgotado: document.getElementById('prod-esgotado').checked
+      };
+
+      try {
+        if (id) {
+          await db.collection('produtos').doc(id).update(dados);
+        } else {
+          await db.collection('produtos').add(dados);
+        }
+        closeModal('modal-produto');
+      } catch (error) {
+        alert("Erro ao salvar: " + error.message);
+      }
+    }
+
+    async function deleteProduto(id) {
+      if(confirm("Tem certeza que deseja excluir este produto?")) {
+        await db.collection('produtos').doc(id).delete();
+      }
+    }
+
+    // OUTRAS FUNÇÕES (CATEGORIA E CONFIG)
+    async function toggleLoja(isAberta) { await db.collection('config').doc('geral').update({ aberta: isAberta }); }
+    async function salvarConfig() {
+      const nome = document.getElementById('config-nome').value;
+      await db.collection('config').doc('geral').update({ nomeLoja: nome });
+      alert("Configurações salvas!");
+    }
+    async function addCategoria(e) {
+      e.preventDefault();
+      await db.collection('categorias').add({ nome: document.getElementById('cat-nome').value });
+      closeModal('modal-categoria');
+      document.getElementById('cat-nome').value = '';
+    }
+    async function deleteCategoria(id) {
+      if(confirm("Excluir categoria? Os produtos ficarão sem categoria.")) await db.collection('categorias').doc(id).delete();
+    }
+
+    // PEDIDOS
+    db.collection('pedidos').orderBy('data', 'desc').limit(20).onSnapshot(snap => {
+        const list = document.getElementById('lista-pedidos');
+        if(!list) return; // Prevenção de erro caso a aba não esteja ativa
+        list.innerHTML = '';
+        let pendentes = 0;
+
+        if (snap.empty) {
+          list.innerHTML = '<p class="text-gray-500">Nenhum pedido novo no momento...</p>';
+        }
+
+        snap.forEach(doc => {
+          const pedido = { id: doc.id, ...doc.data() };
+          if (pedido.status === 'pendente') pendentes++;
+          
+          let statusColor = 'bg-yellow-100 text-yellow-700';
+          if (pedido.status === 'preparando') statusColor = 'bg-blue-100 text-blue-700';
+          if (pedido.status === 'entrega') statusColor = 'bg-purple-100 text-purple-700';
+          if (pedido.status === 'entregue') statusColor = 'bg-green-100 text-green-700';
+          if (pedido.status === 'cancelado') statusColor = 'bg-red-100 text-red-700';
+
+          list.innerHTML += `
+            <div class="bg-white rounded-xl shadow-sm border-l-4 border-[#E85D2A] p-4 mb-4">
+              <div class="flex justify-between items-start mb-2 border-b pb-2">
+                <div>
+                  <h4 class="font-bold text-lg">Pedido #${pedido.id.slice(-4).toUpperCase()}</h4>
+                  <p class="text-sm text-gray-500">${pedido.data ? new Date(pedido.data.toDate()).toLocaleString('pt-BR') : 'Agora'}</p>
+                </div>
+                <span class="${statusColor} text-xs font-bold px-3 py-1 rounded-full uppercase">${pedido.status}</span>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="text-sm">
+                  <p class="font-bold text-gray-700 mb-1">Cliente:</p>
+                  <p>${pedido.cliente.nome} - ${pedido.cliente.telefone}</p>
+                  <p class="text-gray-500 mt-2"><strong>Tipo:</strong> ${pedido.cliente.tipo}</p>
+                  ${pedido.cliente.tipo === 'Entrega' ? `<p class="text-gray-500"><strong>End:</strong> ${pedido.cliente.endereco}, ${pedido.cliente.bairro}</p>` : ''}
+                </div>
+                <div class="text-sm">
+                  <p class="font-bold text-gray-700 mb-1">Pagamento:</p>
+                  <p>${pedido.pagamento.metodo}</p>
+                  ${pedido.pagamento.troco ? `<p class="text-gray-500">Troco para: R$ ${pedido.pagamento.troco}</p>` : ''}
+                  ${pedido.pagamento.comprovante ? `<a href="${pedido.pagamento.comprovante}" target="_blank" class="text-blue-500 underline text-xs mt-1 block">Ver Comprovante Pix</a>` : ''}
+                </div>
+              </div>
+
+              <div class="bg-gray-50 p-3 rounded-lg mb-4 text-sm">
+                ${pedido.itens.map(i => `<div class="flex justify-between mb-1"><span>${i.qty}x ${i.nome}</span><span>R$ ${(i.preco * i.qty).toFixed(2)}</span></div>`).join('')}
+                <div class="flex justify-between font-bold mt-2 pt-2 border-t text-[#E85D2A]">
+                  <span>Total</span><span>R$ ${pedido.total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              ${pedido.status === 'pendente' ? `
+                <div class="flex gap-2">
+                  <button type="button" onclick="updatePedidoStatus('${pedido.id}', 'preparando')" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition">Aceitar e Preparar</button>
+                  <button type="button" onclick="updatePedidoStatus('${pedido.id}', 'cancelado')" class="flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-bold py-2 rounded-lg transition">Recusar</button>
+                </div>
+              ` : ''}
+
+              ${pedido.status === 'preparando' ? `
+                <button type="button" onclick="updatePedidoStatus('${pedido.id}', 'entrega')" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 rounded-lg transition">Saiu para Entrega</button>
+              ` : ''}
+
+              ${pedido.status === 'entrega' ? `
+                <button type="button" onclick="updatePedidoStatus('${pedido.id}', 'entregue')" class="w-full btn-primary font-bold py-2 rounded-lg transition">Confirmar Entrega</button>
+              ` : ''}
+            </div>
+          `;
+        });
+
+        const badges = [document.getElementById('badge-pedidos'), document.getElementById('badge-mobile')];
+        badges.forEach(b => {
+          if (b) {
+            if (pendentes > 0) { b.textContent = pendentes; b.classList.remove('hidden'); }
+            else { b.classList.add('hidden'); }
+          }
+        });
+        document.getElementById('dash-pedidos').textContent = pendentes;
+      });
+
+    async function updatePedidoStatus(id, status) { await db.collection('pedidos').doc(id).update({ status: status }); }
+
+    auth.onAuthStateChanged(user => {
+      if (user && user.email === ADMIN_EMAIL) {
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("app-content").classList.remove("hidden");
+        initApp();
+      }
+    });
+  </script>
+</body>
+</html>
